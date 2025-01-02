@@ -84,29 +84,34 @@ inline auto imageToBitmap(Image* image, Bitmap* &bitmap) -> void {
 	}
 }
 
-inline auto imageToPngStream(Image* image, IStream* &stream) -> void {
-	Gdiplus::GdiplusStartupInput input;
-	ULONG_PTR token;
-	Gdiplus::GdiplusStartup(&token, &input, NULL);
+inline auto imageToPngStream(Image* image, IStream* &stream) -> void 
+{
+    Gdiplus::GdiplusStartupInput input;
+    ULONG_PTR token;
+    Gdiplus::GdiplusStartup(&token, &input, NULL);
 
-	auto    width  = image->getWidth();
-	auto    height = image->getHeight();
-	INT     stride = (width * 3 + 3) / 4 * 4;
-	Bitmap* bitmap = new Bitmap(width, height);
-	BYTE*   bytes  = new BYTE[stride * height];
+    auto width  = image->getWidth();
+    auto height = image->getHeight();
+    INT stride = (width * 3 + 3) / 4 * 4;
 
-	if (!image->isTransparent()) {
-		bitmap = new Bitmap(width, height, stride, PixelFormat24bppRGB, bytes);
-	}
+    BYTE* bytes = new BYTE[stride * height];
+    Bitmap* bitmap = nullptr;
 
-	imageToBitmap(image, bitmap);
-	bitmapToPngStream(bitmap, stream);
+    if (!image->isTransparent()) {
+        bitmap = new Bitmap(width, height, stride, PixelFormat24bppRGB, bytes);
+    } else {
+        bitmap = new Bitmap(width, height);
+    }
 
-	delete bitmap;
-	delete[] bytes;
+    imageToBitmap(image, bitmap);
+    bitmapToPngStream(bitmap, stream);
+    
+    delete bitmap; 
+    delete[] bytes; 
 
-	Gdiplus::GdiplusShutdown(token);
+    Gdiplus::GdiplusShutdown(token);
 }
+
 
 Image::Image(uint16_t aWidth, uint16_t aHeight) {
 	width  = aWidth;
